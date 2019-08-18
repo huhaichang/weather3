@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import com.example.huhaichang.weather3.db.City;
 import com.example.huhaichang.weather3.db.County;
 import com.example.huhaichang.weather3.db.Province;
+import com.example.huhaichang.weather3.gson.Weather;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -77,5 +79,17 @@ public class Utility {
             }
         }
         return false;
+    }
+    public static Weather handleWeatherResponse(String response){
+        try{
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather5");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent,Weather.class);
+            //{"HeWeather5":[{"city","永定"},{"weather","23"},{"pm25":"18"}]}
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 }
