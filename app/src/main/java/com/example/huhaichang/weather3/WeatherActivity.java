@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.huhaichang.weather3.gson.Forecast;
 import com.example.huhaichang.weather3.gson.Weather;
+import com.example.huhaichang.weather3.service.MyService;
 import com.example.huhaichang.weather3.widget.OkhttpUtil;
 import com.example.huhaichang.weather3.widget.ToastUtil;
 import com.example.huhaichang.weather3.widget.Utility;
@@ -34,7 +35,7 @@ import okhttp3.Response;
 
 //先去服务器返回一个json数据在用sharePreference存储   然后解析
 public class WeatherActivity extends AppCompatActivity {
-    private ScrollView mSl;
+    private ScrollView mSV;
     private TextView mTVCityName;
     private TextView mTVUpdateTime;
     private TextView mTVNowTemperature;
@@ -64,7 +65,7 @@ public class WeatherActivity extends AppCompatActivity {
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
         setContentView(R.layout.activity_weather);
-        mSl = findViewById(R.id.sl_1);
+        mSV = findViewById(R.id.sl_1);
         mTVCityName = findViewById(R.id.tv_cityName);
         mTVUpdateTime = findViewById(R.id.tv_updateTime);
         mTVNowTemperature = findViewById(R.id.tv_nowTemperature);
@@ -84,6 +85,7 @@ public class WeatherActivity extends AppCompatActivity {
         //采用SharedPreference(读取数据)（存储的数据没有解析是源网站数据）
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String bingPic = mSharedPreferences.getString("bing_pic",null);
+        //每次一开启app服务会去请求放入数据库 所以是最新的
         if(bingPic!=null){
             Glide.with(WeatherActivity.this).load(bingPic).into(mIVBackground);
         }else{
@@ -91,17 +93,18 @@ public class WeatherActivity extends AppCompatActivity {
         }
         String weatherString = mSharedPreferences.getString("weather",null);
         //判断是否存储没用就去服务器请求
+        //每次一开启app服务会去执行（如果有缓存就重新放入数据库）所以是最新的
         if(weatherString!=null){
             //如果之前存储了就把读取的数据拿去解析
             Weather weather = Utility.handleWeatherResponse(weatherString);
             //解析完后的对象就去ui设置了
             mWeatherId = weather.basic.weatherId;
               showWeatherInfo(weather);
-
         }else{
             mWeatherId = getIntent().getStringExtra("weather_id");
             //服务器返回的数据需要weather_id(随便解析)
             String weatherId = getIntent().getStringExtra("weather_id");  //通过点击事件传值
+            mSV.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
         }
         //按钮点击事件开启滑动菜单
@@ -120,7 +123,7 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
     }
-
+            //一般用户第一次和手动刷新（滑动菜单刷新也是调用手动刷新）才会使用
     public void requestWeather(final String weatherId){
         //S6版本String url ="https://free-api.heweather.net/s6/weather/now?location="+weatherId+"&key=8f2fff01e60947b6a42c7c8f994761bd";
         //s5测试专用还可以用https://free-api.heweather.com/v5/weather?city=CN101010100&key=32d1c829ed7d483086f4f5b4d5947cef
@@ -130,12 +133,12 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
+            //    Log.d("",responseText);
                 final Weather weather = Utility.handleWeatherResponse(responseText);
-           //可能不存在不能放外面     mWeatherId = weather.basic.weatherId;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        //请求解析成功的话
+                        //如果可以解析成功的话
                         if (weather !=null && "ok".equals(weather.status)){
                         //把未解析的放入数据库里
                         mEditor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
@@ -212,7 +215,7 @@ public class WeatherActivity extends AppCompatActivity {
             dateText.setText(forecast.date);
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperature.max);
-            maxText.setText(forecast.temperature.min);
+            minText.setText(forecast.temperature.min);
             mLLforecast.addView(view);//添加到LinerLayout里面去
         }
         //设置sqi指数
@@ -227,5 +230,8 @@ public class WeatherActivity extends AppCompatActivity {
        mTVComfort.setText(comfort);
         mTVCarWash.setText(carWash);
         mTVSport.setText(sport);
+        mSV.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(WeatherActivity.this,MyService.class);
+        startService(intent);
     }
 }

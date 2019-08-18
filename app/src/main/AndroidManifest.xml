@@ -21,10 +21,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WeatherActivity"
-            android:theme="@style/AppThemeTest">
+        <activity
+            android:name=".WeatherActivity"
+            android:theme="@style/AppThemeTest"></activity>
 
-        </activity>
+        <service
+            android:name=".service.MyService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

@@ -1,12 +1,12 @@
 package com.example.huhaichang.weather3;
 
 
+
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -183,7 +183,13 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
     //根据地区area判断查询哪里的数据
     private  void queryFromServer(String address,final String area){
         //查询数据需要时间弄个进度框来提示
+
+
+
         showProgressDialog();
+
+
+
         OkhttpUtil.sendHttpRequest(address, new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -206,7 +212,12 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+
                             closeProgressDialog();
+
+
+
                             if("province".equals(area)){
                                 queryProvinces();
                             }
@@ -227,7 +238,12 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
+
+
                         closeProgressDialog();
+
+
                         ToastUtil.showMsg(getContext(),"加载失败");
                     }
                 });
@@ -244,7 +260,7 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
         }
         progressDialog.show();
     }
-    private void closeProgressDialog(){
+   private void closeProgressDialog(){
         if(progressDialog!=null){
             progressDialog.dismiss();
         }
